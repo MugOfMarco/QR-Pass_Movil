@@ -9,22 +9,19 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../utils/firebase';
 import { studentService } from '../utils/studentService';
 
 const SearchScreen = ({ onBack, onStudentSelect }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery]     = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
-  const searchTimeoutRef = useRef(null);
+  const searchTimeoutRef                  = useRef(null);
 
   const handleSearchChange = (text) => {
     setSearchQuery(text);
-    
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
     searchTimeoutRef.current = setTimeout(() => {
       searchStudents(text);
     }, 300);
@@ -51,11 +48,11 @@ const SearchScreen = ({ onBack, onStudentSelect }) => {
     try {
       const [schedule, accredited] = await Promise.all([
         studentService.getStudentSchedule(student.groupId),
-        studentService.getAccreditedSubjects(student.boleta)
+        studentService.getAccreditedSubjects(student.boleta),
       ]);
 
       await studentService.registerConsultation(student.boleta, student.name, 'manual_search');
-      
+
       onStudentSelect(student, schedule, accredited);
     } catch (error) {
       console.error('Error seleccionando estudiante:', error);
@@ -71,7 +68,7 @@ const SearchScreen = ({ onBack, onStudentSelect }) => {
         <Text style={styles.headerTitle}>Buscar Alumno</Text>
         <View style={styles.placeholder} />
       </View>
-      
+
       <View style={styles.searchContent}>
         <View style={styles.searchBox}>
           <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
@@ -85,15 +82,12 @@ const SearchScreen = ({ onBack, onStudentSelect }) => {
             autoFocus
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => {
-              setSearchQuery('');
-              setSearchResults([]);
-            }}>
+            <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
               <Ionicons name="close-circle" size={20} color="#666" />
             </TouchableOpacity>
           )}
         </View>
-        
+
         {searchLoading ? (
           <View style={styles.loadingCenter}>
             <ActivityIndicator size="large" color="#8B2453" />
@@ -105,14 +99,10 @@ const SearchScreen = ({ onBack, onStudentSelect }) => {
             keyExtractor={(item) => item.id}
             style={styles.resultsList}
             renderItem={({ item }) => (
-              <TouchableOpacity 
-                style={styles.resultItem}
-                onPress={() => handleStudentSelect(item)}
-              >
+              <TouchableOpacity style={styles.resultItem} onPress={() => handleStudentSelect(item)}>
                 <View style={styles.resultContent}>
                   <Text style={styles.resultName}>{item.name}</Text>
                   <Text style={styles.resultDetails}>Boleta: {item.boleta}</Text>
-                  <Text style={styles.resultDetails}>Grupo: {item.groupId?.replace('group_', '') || 'N/A'}</Text>
                   <Text style={styles.resultDetails}>Carrera: {item.career || 'No especificada'}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#8B2453" />
@@ -157,9 +147,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
   },
-  backButton: {
-    padding: 5,
-  },
+  backButton: { padding: 5 },
   headerTitle: {
     color: '#000000',
     fontSize: 20,
@@ -167,9 +155,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  placeholder: {
-    width: 34,
-  },
+  placeholder: { width: 34 },
   searchContent: {
     flex: 1,
     padding: 20,
@@ -185,9 +171,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DDD',
   },
-  searchIcon: {
-    marginRight: 10,
-  },
+  searchIcon: { marginRight: 10 },
   searchInput: {
     flex: 1,
     fontSize: 16,
@@ -203,9 +187,7 @@ const styles = StyleSheet.create({
     color: '#8B2453',
     fontSize: 16,
   },
-  resultsList: {
-    flex: 1,
-  },
+  resultsList: { flex: 1 },
   resultItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -216,9 +198,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: '#8B2453',
   },
-  resultContent: {
-    flex: 1,
-  },
+  resultContent: { flex: 1 },
   resultName: {
     fontSize: 16,
     fontWeight: 'bold',

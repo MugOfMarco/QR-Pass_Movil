@@ -1,41 +1,50 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from './utils/firebase';
+import { supabase } from './utils/supabase';
 
-import LoginScreen from './components/login';
-import MainMenu from './components/main';
-import CameraScreen from './components/camera';
-import SearchScreen from './components/buscar';
-import HistoryScreen from './components/historial';
-import InfoScreen from './components/info';
+import LoginScreen    from './components/login';
+import MainMenu       from './components/main';
+import CameraScreen   from './components/camera';
+import SearchScreen   from './components/buscar';
+import HistoryScreen  from './components/historial';
+import InfoScreen     from './components/info';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('login');
+  const [currentScreen, setCurrentScreen]           = useState('login');
   const [scannedStudentData, setScannedStudentData] = useState(null);
-  const [studentSchedule, setStudentSchedule] = useState([]);
+  const [studentSchedule, setStudentSchedule]       = useState([]);
   const [accreditedSubjects, setAccreditedSubjects] = useState([]);
   const [consultationHistory, setConsultationHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const [loading, setLoading]                       = useState(true);
+  const [user, setUser]                             = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
+    // Check existing session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUser(session.user);
+        setCurrentScreen('menu');
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUser(session.user);
         setCurrentScreen('menu');
       } else {
         setUser(null);
         setCurrentScreen('login');
       }
     });
-    
-    return unsubscribe;
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await supabase.auth.signOut();
       setScannedStudentData(null);
       setStudentSchedule([]);
       setAccreditedSubjects([]);
@@ -56,7 +65,7 @@ export default function App() {
 
   const updateStudentData = (studentData, schedule, accredited) => {
     setScannedStudentData(studentData);
-    if (schedule) setStudentSchedule(schedule);
+    if (schedule)   setStudentSchedule(schedule);
     if (accredited) setAccreditedSubjects(accredited);
   };
 
@@ -75,7 +84,7 @@ export default function App() {
   switch (currentScreen) {
     case 'login':
       return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
-    
+
     case 'camera':
       return (
         <CameraScreen
@@ -86,7 +95,7 @@ export default function App() {
           }}
         />
       );
-    
+
     case 'search':
       return (
         <SearchScreen
@@ -97,7 +106,7 @@ export default function App() {
           }}
         />
       );
-    
+
     case 'history':
       return (
         <HistoryScreen
@@ -107,7 +116,7 @@ export default function App() {
           onHistoryLoaded={updateConsultationHistory}
         />
       );
-    
+
     case 'info':
       return (
         <InfoScreen
@@ -117,7 +126,7 @@ export default function App() {
           accreditedSubjects={accreditedSubjects}
         />
       );
-    
+
     case 'menu':
     default:
       return (

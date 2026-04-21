@@ -8,12 +8,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../utils/firebase';
 import { studentService } from '../utils/studentService';
 
 const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoaded }) => {
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [localHistory, setLocalHistory] = useState(consultationHistory || []);
+  const [localHistory, setLocalHistory]     = useState(consultationHistory || []);
 
   useEffect(() => {
     if (studentData?.boleta) {
@@ -23,17 +22,12 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
 
   const loadConsultationHistory = async () => {
     if (!studentData?.boleta) return;
-    
+
     try {
       setHistoryLoading(true);
-      const user = auth.currentUser;
-      if (!user) return;
-      
-      const history = await studentService.getConsultationHistory(studentData.boleta, user.uid);
+      const history = await studentService.getConsultationHistory(studentData.boleta);
       setLocalHistory(history);
-      if (onHistoryLoaded) {
-        onHistoryLoaded(history);
-      }
+      if (onHistoryLoaded) onHistoryLoaded(history);
     } catch (error) {
       console.error('Error cargando historial:', error);
     } finally {
@@ -44,11 +38,11 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
   const formatDate = (date) => {
     if (!date) return '';
     return date.toLocaleDateString('es-MX', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day:    '2-digit',
+      month:  '2-digit',
+      year:   'numeric',
+      hour:   '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -61,7 +55,7 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
         <Text style={styles.headerTitle}>Historial de Consultas</Text>
         <View style={styles.placeholder} />
       </View>
-      
+
       <ScrollView style={styles.historyContent}>
         <View style={styles.historyStudentInfo}>
           <Text style={styles.historyStudentName}>{studentData?.name}</Text>
@@ -70,14 +64,14 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
             Total de consultas: {localHistory.length}
           </Text>
         </View>
-        
+
         {historyLoading ? (
           <View style={styles.loadingCenter}>
             <ActivityIndicator size="large" color="#8B2453" />
             <Text style={styles.loadingText}>Cargando historial...</Text>
           </View>
         ) : localHistory.length > 0 ? (
-          localHistory.map((item, index) => (
+          localHistory.map((item) => (
             <View key={item.id} style={styles.historyItem}>
               <View style={styles.historyHeader}>
                 <Text style={styles.historyDate}>{formatDate(item.date)}</Text>
@@ -88,7 +82,7 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
                 </View>
               </View>
               <Text style={styles.historyPrefect}>
-                Prefecto: {item.prefectEmail || 'Desconocido'}
+                Prefecto: {item.prefectName || item.prefectEmail || 'Desconocido'}
               </Text>
               <Text style={styles.historyDetails}>{item.details}</Text>
             </View>

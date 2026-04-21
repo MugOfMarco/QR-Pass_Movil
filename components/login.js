@@ -8,38 +8,38 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../utils/firebase';
+import { supabase } from '../utils/supabase';
 
 const LoginScreen = ({ onLoginSuccess }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]   = useState(false);
 
   const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert('Error', 'Por favor ingresa usuario y contraseña');
+    if (!email || !password) {
+      Alert.alert('Error', 'Por favor ingresa email y contraseña');
       return;
     }
 
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, username, password);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) throw error;
+
       onLoginSuccess();
     } catch (error) {
       console.error('Error de autenticación:', error);
-      
+
       let errorMessage = 'Error al iniciar sesión';
-      if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Email inválido';
-      } else if (error.code === 'auth/user-not-found') {
-        errorMessage = 'Usuario no encontrado';
-      } else if (error.code === 'auth/wrong-password') {
-        errorMessage = 'Contraseña incorrecta';
-      } else if (error.code === 'auth/too-many-requests') {
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'Email o contraseña incorrectos';
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = 'Confirma tu email antes de iniciar sesión';
+      } else if (error.message?.includes('Too many requests')) {
         errorMessage = 'Demasiados intentos. Intenta más tarde';
       }
-      
+
       Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
@@ -51,14 +51,14 @@ const LoginScreen = ({ onLoginSuccess }) => {
       <View style={styles.loginContent}>
         <Text style={styles.loginTitle}>QR PASS APP</Text>
         <Text style={styles.loginSubtitle}>Iniciar Sesión</Text>
-        
+
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             placeholder="Email"
             placeholderTextColor="#999"
-            value={username}
-            onChangeText={setUsername}
+            value={email}
+            onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
           />
@@ -72,9 +72,9 @@ const LoginScreen = ({ onLoginSuccess }) => {
             autoCapitalize="none"
           />
         </View>
-        
-        <TouchableOpacity 
-          style={[styles.loginButton, loading && styles.loginButtonDisabled]} 
+
+        <TouchableOpacity
+          style={[styles.loginButton, loading && styles.loginButtonDisabled]}
           onPress={handleLogin}
           disabled={loading}
         >
@@ -84,8 +84,10 @@ const LoginScreen = ({ onLoginSuccess }) => {
             <Text style={styles.loginButtonText}>Ingresar</Text>
           )}
         </TouchableOpacity>
-        
-        <Text style={styles.loginHint}>Usa el email y contraseña creados en Firebase Auth</Text>
+
+        <Text style={styles.loginHint}>
+          Usa el email y contraseña registrados en Supabase Auth
+        </Text>
       </View>
     </View>
   );
