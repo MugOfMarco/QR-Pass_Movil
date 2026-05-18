@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { supabase } from './utils/supabase';
-
 import LoginScreen    from './components/login';
 import MainMenu       from './components/main';
 import CameraScreen   from './components/camera';

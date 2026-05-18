@@ -26,11 +26,11 @@ export const studentService = {
           )
         `)
         .eq('boleta', parseInt(boleta))
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (!data) return null;
-
+RS
       return {
         boleta:          data.boleta,
         name:            data.nombre_completo,
