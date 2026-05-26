@@ -54,14 +54,9 @@ const CameraScreen = ({ onClose, onStudentScanned }) => {
         return;
       }
 
-      const [schedule, accredited] = await Promise.all([
-        studentService.getStudentSchedule(studentData.groupId),
-        studentService.getAccreditedSubjects(boleta)
-      ]);
+      const schedule = await studentService.getStudentSchedule(studentData.groupId);
 
-      await studentService.registerConsultation(boleta, studentData.name, 'qr_scan');
-      
-      onStudentScanned(studentData, schedule, accredited);
+      onStudentScanned(studentData, schedule);
       
     } catch (error) {
       console.error("Error procesando QR:", error);

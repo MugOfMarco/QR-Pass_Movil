@@ -1,46 +1,30 @@
+// components/login.js
+// Login con usuario/contraseña contra la tabla usuarios_sistema (bcrypt).
+// NO usa Supabase Auth — el sistema web tiene su propio auth.
+
 import React, { useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Alert,
-  TextInput,
-  ActivityIndicator,
+  StyleSheet, Text, View, TouchableOpacity,
+  Alert, TextInput, ActivityIndicator, Image,
 } from 'react-native';
-import { supabase } from '../utils/supabase';
+import { authService } from '../utils/authService';
 
 const LoginScreen = ({ onLoginSuccess }) => {
-  const [email, setEmail]       = useState('');
+  const [usuario,  setUsuario]  = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading]   = useState(false);
+  const [loading,  setLoading]  = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Por favor ingresa email y contraseña');
+    if (!usuario.trim() || !password) {
+      Alert.alert('Campos requeridos', 'Ingresa usuario y contraseña.');
       return;
     }
-
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (error) throw error;
-
-      onLoginSuccess();
-    } catch (error) {
-      console.error('Error de autenticación:', error);
-
-      let errorMessage = 'Error al iniciar sesión';
-      if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = 'Email o contraseña incorrectos';
-      } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = 'Confirma tu email antes de iniciar sesión';
-      } else if (error.message?.includes('Too many requests')) {
-        errorMessage = 'Demasiados intentos. Intenta más tarde';
-      }
-
-      Alert.alert('Error', errorMessage);
+      const user = await authService.login(usuario.trim(), password);
+      onLoginSuccess(user);
+    } catch (err) {
+      Alert.alert('Error', err.message || 'Error al iniciar sesión.');
     } finally {
       setLoading(false);
     }
@@ -48,45 +32,53 @@ const LoginScreen = ({ onLoginSuccess }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.loginContent}>
-        <Text style={styles.loginTitle}>QR PASS APP</Text>
-        <Text style={styles.loginSubtitle}>Iniciar Sesión</Text>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#999"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            placeholderTextColor="#999"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            autoCapitalize="none"
-          />
+      <View style={styles.card}>
+        {/* Logo / encabezado */}
+        <View style={styles.logoWrap}>
+          <View style={styles.logoBadge}>
+            <Text style={styles.logoText}>QR</Text>
+          </View>
+          <Text style={styles.appTitle}>QR Pass</Text>
+          <Text style={styles.appSub}>CECyT 9 — Prefectura</Text>
         </View>
 
+        <Text style={styles.label}>Usuario</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Tu usuario del sistema"
+          placeholderTextColor="#999"
+          value={usuario}
+          onChangeText={setUsuario}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <Text style={styles.label}>Contraseña</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Contraseña"
+          placeholderTextColor="#999"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          autoCapitalize="none"
+          onSubmitEditing={handleLogin}
+        />
+
         <TouchableOpacity
-          style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+          style={[styles.btn, loading && styles.btnDisabled]}
           onPress={handleLogin}
           disabled={loading}
         >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text style={styles.loginButtonText}>Ingresar</Text>
-          )}
+          {loading
+            ? <ActivityIndicator color="white" />
+            : <Text style={styles.btnText}>Ingresar</Text>
+          }
         </TouchableOpacity>
 
-        <Text style={styles.loginHint}>
-          Usa el email y contraseña registrados en Supabase Auth
+        <Text style={styles.hint}>
+          Usa el mismo usuario y contraseña del sistema web QR-Pass.{'\n'}
+          Solo pueden ingresar usuarios con rol Prefecto o Administrador.
         </Text>
       </View>
     </View>
@@ -96,63 +88,82 @@ const LoginScreen = ({ onLoginSuccess }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#7c1f1f',
+    justifyContent: 'center',
+    padding: 24,
   },
-  loginContent: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 30,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  logoWrap: {
+    alignItems: 'center',
+    marginBottom: 28,
+  },
+  logoBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: '#8B2453',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
-  },
-  loginTitle: {
-    color: '#000000',
-    fontSize: 32,
-    fontWeight: 'bold',
     marginBottom: 10,
   },
-  loginSubtitle: {
-    color: '#8B2453',
-    fontSize: 20,
+  logoText: {
+    color: '#fff',
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 40,
   },
-  inputContainer: {
-    width: '100%',
-    marginBottom: 30,
+  appTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#111',
+  },
+  appSub: {
+    fontSize: 13,
+    color: '#8B2453',
+    marginTop: 4,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#444',
+    marginBottom: 6,
+    marginTop: 14,
   },
   input: {
     backgroundColor: '#F5F5F5',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#DDD',
     borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
+    padding: 14,
+    fontSize: 15,
+    color: '#111',
   },
-  loginButton: {
+  btn: {
     backgroundColor: '#8B2453',
-    borderWidth: 2,
-    borderColor: '#591634',
     borderRadius: 30,
-    paddingHorizontal: 40,
     paddingVertical: 15,
     alignItems: 'center',
-    minWidth: 200,
+    marginTop: 26,
   },
-  loginButtonDisabled: {
-    opacity: 0.7,
-  },
-  loginButtonText: {
+  btnDisabled: { opacity: 0.65 },
+  btnText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 'bold',
   },
-  loginHint: {
-    color: '#666',
-    fontSize: 12,
-    marginTop: 20,
+  hint: {
+    color: '#999',
+    fontSize: 11,
+    marginTop: 18,
     textAlign: 'center',
+    lineHeight: 17,
   },
 });
 

@@ -76,15 +76,15 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
               <View style={styles.historyHeader}>
                 <Text style={styles.historyDate}>{formatDate(item.date)}</Text>
                 <View style={styles.historyTypeBadge}>
-                  <Text style={styles.historyTypeText}>
-                    {item.consultationType === 'qr_scan' ? 'QR' : 'Manual'}
-                  </Text>
+                  <Text style={styles.historyTypeText}>{item.tipo}</Text>
                 </View>
               </View>
               <Text style={styles.historyPrefect}>
-                Prefecto: {item.prefectName || item.prefectEmail || 'Desconocido'}
+                Puerta: {item.punto}
               </Text>
-              <Text style={styles.historyDetails}>{item.details}</Text>
+              <Text style={styles.historyDetails}>
+                Registrado por: {item.prefecto}
+              </Text>
             </View>
           ))
         ) : (

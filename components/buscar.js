@@ -46,16 +46,15 @@ const SearchScreen = ({ onBack, onStudentSelect }) => {
 
   const handleStudentSelect = async (student) => {
     try {
-      const [schedule, accredited] = await Promise.all([
+      // Carga datos completos + horario
+      const [full, schedule] = await Promise.all([
+        studentService.getStudentByBoleta(student.boleta),
         studentService.getStudentSchedule(student.groupId),
-        studentService.getAccreditedSubjects(student.boleta),
       ]);
-
-      await studentService.registerConsultation(student.boleta, student.name, 'manual_search');
-
-      onStudentSelect(student, schedule, accredited);
+      onStudentSelect(full || student, schedule);
     } catch (error) {
       console.error('Error seleccionando estudiante:', error);
+      onStudentSelect(student, []);
     }
   };
 
