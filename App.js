@@ -1,86 +1,58 @@
-import React, { useState, useEffect } from 'react';
+// App.js — Punto de entrada de la app móvil QR-Pass Prefecto.
+// Auth personalizado contra usuarios_sistema (NO usa Supabase Auth).
+
+import React, { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { supabase } from './utils/supabase';
-import LoginScreen    from './components/login';
-import MainMenu       from './components/main';
-import CameraScreen   from './components/camera';
-import SearchScreen   from './components/buscar';
-import HistoryScreen  from './components/historial';
-import InfoScreen     from './components/info';
+
+import LoginScreen   from './components/login';
+import MainMenu      from './components/main';
+import CameraScreen  from './components/camera';
+import SearchScreen  from './components/buscar';
+import HistoryScreen from './components/historial';
+import InfoScreen    from './components/info';
+import FiltrarScreen from './components/filtrar';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen]           = useState('login');
-  const [scannedStudentData, setScannedStudentData] = useState(null);
-  const [studentSchedule, setStudentSchedule]       = useState([]);
-  const [accreditedSubjects, setAccreditedSubjects] = useState([]);
-  const [consultationHistory, setConsultationHistory] = useState([]);
-  const [loading, setLoading]                       = useState(true);
-  const [user, setUser]                             = useState(null);
+  const [currentScreen, setCurrentScreen] = useState('login');
+  const [user,          setUser]          = useState(null);       // { id, usuario, nombre, rol }
+  const [studentData,   setStudentData]   = useState(null);       // alumno actualmente seleccionado
+  const [studentSchedule, setStudentSchedule] = useState([]);
 
-  useEffect(() => {
-    // Check existing session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setUser(session.user);
-        setCurrentScreen('menu');
-      }
-      setLoading(false);
-    });
+  const navigateTo = (screen) => setCurrentScreen(screen);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        setUser(session.user);
-        setCurrentScreen('menu');
-      } else {
-        setUser(null);
-        setCurrentScreen('login');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      setScannedStudentData(null);
-      setStudentSchedule([]);
-      setAccreditedSubjects([]);
-      setConsultationHistory([]);
-      setCurrentScreen('login');
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    navigateTo('menu');
   };
 
-  const handleLoginSuccess = () => {
-    setCurrentScreen('menu');
+  const handleLogout = () => {
+    setUser(null);
+    setStudentData(null);
+    setStudentSchedule([]);
+    navigateTo('login');
   };
 
-  const navigateTo = (screen) => {
-    setCurrentScreen(screen);
+  const handleStudentScanned = (data, schedule = []) => {
+    setStudentData(data);
+    setStudentSchedule(schedule);
+    navigateTo('menu');
   };
 
-  const updateStudentData = (studentData, schedule, accredited) => {
-    setScannedStudentData(studentData);
-    if (schedule)   setStudentSchedule(schedule);
-    if (accredited) setAccreditedSubjects(accredited);
+  const handleStudentSelected = (data, schedule = []) => {
+    setStudentData(data);
+    setStudentSchedule(schedule);
+    navigateTo('menu');
   };
 
-  const updateConsultationHistory = (history) => {
-    setConsultationHistory(history);
+  // Desde FiltrarScreen → ver info del alumno seleccionado
+  const handleFiltrarSelect = (data) => {
+    setStudentData(data);
+    setStudentSchedule([]);  // se carga lazy en InfoScreen
+    navigateTo('info');
   };
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#8B2453" />
-      </View>
-    );
-  }
 
   switch (currentScreen) {
+
     case 'login':
       return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
 
@@ -88,10 +60,7 @@ export default function App() {
       return (
         <CameraScreen
           onClose={() => navigateTo('menu')}
-          onStudentScanned={(studentData, schedule, accredited) => {
-            updateStudentData(studentData, schedule, accredited);
-            navigateTo('menu');
-          }}
+          onStudentScanned={handleStudentScanned}
         />
       );
 
@@ -99,10 +68,7 @@ export default function App() {
       return (
         <SearchScreen
           onBack={() => navigateTo('menu')}
-          onStudentSelect={(studentData, schedule, accredited) => {
-            updateStudentData(studentData, schedule, accredited);
-            navigateTo('menu');
-          }}
+          onStudentSelect={handleStudentSelected}
         />
       );
 
@@ -110,9 +76,7 @@ export default function App() {
       return (
         <HistoryScreen
           onBack={() => navigateTo('menu')}
-          studentData={scannedStudentData}
-          consultationHistory={consultationHistory}
-          onHistoryLoaded={updateConsultationHistory}
+          studentData={studentData}
         />
       );
 
@@ -120,9 +84,16 @@ export default function App() {
       return (
         <InfoScreen
           onBack={() => navigateTo('menu')}
-          studentData={scannedStudentData}
+          studentData={studentData}
           studentSchedule={studentSchedule}
-          accreditedSubjects={accreditedSubjects}
+        />
+      );
+
+    case 'filtrar':
+      return (
+        <FiltrarScreen
+          onBack={() => navigateTo('menu')}
+          onStudentSelect={handleFiltrarSelect}
         />
       );
 
@@ -130,11 +101,13 @@ export default function App() {
     default:
       return (
         <MainMenu
-          studentData={scannedStudentData}
-          onOpenCamera={() => navigateTo('camera')}
-          onOpenSearch={() => navigateTo('search')}
-          onOpenInfo={() => navigateTo('info')}
-          onOpenHistory={() => navigateTo('history')}
+          user={user}
+          studentData={studentData}
+          onOpenCamera={()   => navigateTo('camera')}
+          onOpenSearch={()   => navigateTo('search')}
+          onOpenFiltrar={()  => navigateTo('filtrar')}
+          onOpenInfo={()     => navigateTo('info')}
+          onOpenHistory={()  => navigateTo('history')}
           onLogout={handleLogout}
         />
       );

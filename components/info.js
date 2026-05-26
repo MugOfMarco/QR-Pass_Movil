@@ -8,16 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const InfoScreen = ({ onBack, studentData, studentSchedule, accreditedSubjects }) => {
-  const formatDate = (timestamp) => {
-    if (!timestamp) return '';
-    try {
-      const date = timestamp?.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-      return date.toLocaleDateString('es-MX');
-    } catch {
-      return '';
-    }
-  };
+const InfoScreen = ({ onBack, studentData, studentSchedule }) => {
 
   return (
     <View style={styles.container}>
@@ -50,10 +41,9 @@ const InfoScreen = ({ onBack, studentData, studentSchedule, accreditedSubjects }
           
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Situación:</Text>
+              <Text style={styles.infoLabel}>Estado académico:</Text>
               <Text style={styles.infoValue}>
-                {studentData?.academicStatus === 'active' ? 'Regular' : 
-                 studentData?.academicStatus || 'No especificado'}
+                {studentData?.academicStatus || 'No especificado'}
               </Text>
             </View>
             
@@ -65,10 +55,18 @@ const InfoScreen = ({ onBack, studentData, studentSchedule, accreditedSubjects }
             </View>
             
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Puerta Abierta:</Text>
+              <Text style={styles.infoLabel}>Puerta abierta:</Text>
               <Text style={styles.infoValue}>
                 {studentData?.openDoor ? 'SÍ' : 'NO'}
               </Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Retardos acumulados:</Text>
+              <Text style={styles.infoValue}>{studentData?.retardos ?? 0}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Sin credencial:</Text>
+              <Text style={styles.infoValue}>{studentData?.sinCredencial ?? 0}</Text>
             </View>
           </View>
         </View>
@@ -129,23 +127,6 @@ const InfoScreen = ({ onBack, studentData, studentSchedule, accreditedSubjects }
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Materias Acreditadas</Text>
-          {accreditedSubjects.length > 0 ? (
-            accreditedSubjects.map((subject, index) => (
-              <View key={index} style={styles.espaItem}>
-                <Text style={styles.espaText}>• {subject.subjectName}</Text>
-                {subject.accreditationDate && (
-                  <Text style={styles.espaDate}>
-                    Acreditada: {formatDate(subject.accreditationDate)}
-                  </Text>
-                )}
-              </View>
-            ))
-          ) : (
-            <Text style={styles.noDataText}>No hay materias acreditadas</Text>
-          )}
-        </View>
       </ScrollView>
     </View>
   );
