@@ -43,3 +43,6 @@ yarn-error.*
 # Firebase
 service-account-key.json
 firebase-config.js
+
+.env.local
+.env
