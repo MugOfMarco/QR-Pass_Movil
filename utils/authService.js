@@ -1,9 +1,8 @@
 // utils/authService.js
-// Autenticación personalizada contra la tabla usuarios_sistema.
-// El sistema web NO usa Supabase Auth — usa bcrypt + sessions propio.
-// Aquí verificamos la contraseña con bcryptjs y validamos el rol.
+// Autenticación via Supabase RPC (función mobile_login).
+// La verificación de bcrypt ocurre en PostgreSQL — no se expone password_hash.
+// No depende de Render, solo de Supabase (siempre activo).
 
-import bcrypt from 'bcryptjs';
 import { supabase } from './supabase';
 
 export const authService = {
@@ -13,39 +12,15 @@ export const authService = {
       throw new Error('Ingresa usuario y contraseña.');
     }
 
-    // 1. Buscar usuario en la tabla usuarios_sistema
-    const { data, error } = await supabase
-      .from('usuarios_sistema')
-      .select(`
-        id_usuario,
-        usuario,
-        nombre_completo,
-        email,
-        password_hash,
-        roles ( nombre_rol )
-      `)
-      .eq('usuario', usuario.trim())
-      .maybeSingle();
+    const { data, error } = await supabase.rpc('mobile_login', {
+      p_usuario:  usuario.trim(),
+      p_password: password,
+    });
 
-    if (error) throw new Error('Error de conexión con la base de datos.');
-    if (!data)  throw new Error('Usuario o contraseña incorrectos.');
+    if (error) throw new Error(`Error: ${error.message}`);
 
-    // 2. Verificar contraseña con bcrypt
-    const passwordOk = await bcrypt.compare(password, data.password_hash);
-    if (!passwordOk) throw new Error('Usuario o contraseña incorrectos.');
+    if (!data.success) throw new Error(data.message);
 
-    // 3. Verificar que el rol tenga acceso a esta app
-    const rol = data.roles?.nombre_rol;
-    if (!['Prefecto', 'Administrador'].includes(rol)) {
-      throw new Error('Tu rol no tiene acceso a esta aplicación.');
-    }
-
-    return {
-      id:      data.id_usuario,
-      usuario: data.usuario,
-      nombre:  data.nombre_completo,
-      email:   data.email,
-      rol,
-    };
+    return data.user;
   },
 };

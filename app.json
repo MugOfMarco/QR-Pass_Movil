@@ -1,6 +1,4 @@
 {
-
-
   "expo": {
     "name": "QRmov",
     "slug": "QRmov",
@@ -20,12 +18,15 @@
       }
     },
     "android": {
+      "package": "mx.ipn.cecyt9.qrpass",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -37,7 +38,14 @@
         {
           "cameraPermission": "Permitir que $(PRODUCT_NAME) acceda a tu cámara"
         }
-      ]
-    ]
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5c316131-7630-4491-b998-b101140ccb0d"
+      }
+    },
+    "owner": "mugofmarco"
   }
 }

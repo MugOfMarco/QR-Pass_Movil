@@ -15,10 +15,12 @@ const SearchScreen = ({ onBack, onStudentSelect }) => {
   const [searchQuery, setSearchQuery]     = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError,   setSearchError]   = useState(null);
   const searchTimeoutRef                  = useRef(null);
 
   const handleSearchChange = (text) => {
     setSearchQuery(text);
+    setSearchError(null);
 
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
@@ -30,15 +32,19 @@ const SearchScreen = ({ onBack, onStudentSelect }) => {
   const searchStudents = async (queryText) => {
     if (queryText.length < 2) {
       setSearchResults([]);
+      setSearchError(null);
       return;
     }
 
     try {
       setSearchLoading(true);
+      setSearchError(null);
       const results = await studentService.searchStudents(queryText);
       setSearchResults(results);
     } catch (error) {
       console.error('Error buscando alumnos:', error);
+      setSearchResults([]);
+      setSearchError(error.message || 'Error al conectar con la base de datos.');
     } finally {
       setSearchLoading(false);
     }
@@ -91,6 +97,12 @@ const SearchScreen = ({ onBack, onStudentSelect }) => {
           <View style={styles.loadingCenter}>
             <ActivityIndicator size="large" color="#8B2453" />
             <Text style={styles.loadingText}>Buscando...</Text>
+          </View>
+        ) : searchError ? (
+          <View style={styles.noResults}>
+            <Ionicons name="cloud-offline-outline" size={50} color="#e74c3c" />
+            <Text style={[styles.noResultsText, { color: '#e74c3c' }]}>Error de conexión</Text>
+            <Text style={styles.noResultsSubtext}>{searchError}</Text>
           </View>
         ) : searchResults.length > 0 ? (
           <FlatList
