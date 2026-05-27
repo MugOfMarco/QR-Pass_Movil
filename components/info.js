@@ -28,7 +28,7 @@ const InfoScreen = ({ onBack, studentData, studentSchedule }) => {
               Boleta: {studentData.boleta}
             </Text>
             <Text style={styles.studentDetails}>
-              Grupo: {studentData.groupId?.replace('group_', '')}
+              Grupo: {studentData.groupName}
             </Text>
             <Text style={styles.studentDetails}>
               Carrera: {studentData.career || 'No especificada'}
@@ -304,25 +304,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
     color: '#333',
-  },
-  espaItem: {
-    marginBottom: 8,
-    backgroundColor: '#F5F5F5',
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: '#8B2453',
-  },
-  espaText: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-  },
-  espaDate: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 10,
-    fontStyle: 'italic',
   },
   noData: {
     padding: 20,

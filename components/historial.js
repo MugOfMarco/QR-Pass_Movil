@@ -52,7 +52,7 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Historial de Consultas</Text>
+        <Text style={styles.headerTitle}>Historial de Acceso</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -61,7 +61,7 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
           <Text style={styles.historyStudentName}>{studentData?.name}</Text>
           <Text style={styles.historyStudentBoleta}>Boleta: {studentData?.boleta}</Text>
           <Text style={styles.historyTotalConsultations}>
-            Total de consultas: {localHistory.length}
+            Total de registros: {localHistory.length}
           </Text>
         </View>
 
@@ -90,8 +90,8 @@ const HistoryScreen = ({ onBack, studentData, consultationHistory, onHistoryLoad
         ) : (
           <View style={styles.noHistory}>
             <Ionicons name="time-outline" size={50} color="#CCC" />
-            <Text style={styles.noHistoryText}>No hay consultas registradas</Text>
-            <Text style={styles.noHistorySubtext}>Este alumno no ha sido consultado aún</Text>
+            <Text style={styles.noHistoryText}>Sin registros de acceso</Text>
+            <Text style={styles.noHistorySubtext}>Este alumno no tiene entradas o salidas registradas</Text>
           </View>
         )}
       </ScrollView>

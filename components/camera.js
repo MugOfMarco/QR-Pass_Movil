@@ -71,23 +71,6 @@ const CameraScreen = ({ onClose, onStudentScanned }) => {
     }
   };
 
-  const simulateQRScan = () => {
-    if (scanCooldown) {
-      return;
-    }
-    
-    setScanCooldown(true);
-    lastScannedData.current = '2024090001';
-    handleBarCodeScanned({ 
-      data: 'https://coatl.cecyt9.ipn.mx/app/qr_system/accessprocess.php?boleta=2024090001' 
-    });
-    
-    setTimeout(() => {
-      setScanCooldown(false);
-      lastScannedData.current = '';
-    }, 2000);
-  };
-
   function toggleCameraFacing() {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
   }
@@ -159,17 +142,6 @@ const CameraScreen = ({ onClose, onStudentScanned }) => {
             <View style={styles.scanCornerBR} />
           </View>
           
-          <View style={styles.cameraControls}>
-            <TouchableOpacity 
-              style={[styles.simulateButton, scanCooldown && styles.simulateButtonDisabled]} 
-              onPress={simulateQRScan}
-              disabled={scanCooldown}
-            >
-              <Text style={styles.simulateButtonText}>
-                {scanCooldown ? 'Esperando...' : 'Simular Escaneo'}
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </View>
@@ -306,25 +278,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 4,
     borderRightWidth: 4,
     borderColor: '#8B2453',
-  },
-  cameraControls: {
-    alignItems: 'center',
-  },
-  simulateButton: {
-    backgroundColor: '#8B2453',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 25,
-    borderWidth: 2,
-    borderColor: '#591634',
-  },
-  simulateButtonDisabled: {
-    backgroundColor: 'rgba(139, 36, 83, 0.5)',
-  },
-  simulateButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
   },
   button: {
     backgroundColor: '#8B2453',
