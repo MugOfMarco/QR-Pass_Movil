@@ -14,8 +14,10 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Esta app necesita acceso a la cámara para escanear códigos QR."
-      }
+        "NSCameraUsageDescription": "Esta app necesita acceso a la cámara para escanear códigos QR.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "mx.ipn.cecyt9.qrpass"
     },
     "android": {
       "package": "mx.ipn.cecyt9.qrpass",

@@ -11,6 +11,8 @@ import SearchScreen  from './components/buscar';
 import HistoryScreen from './components/historial';
 import InfoScreen    from './components/info';
 import FiltrarScreen from './components/filtrar';
+import SoporteScreen from './components/soporte';
+import LegalScreen   from './components/legal';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('login');
@@ -97,17 +99,34 @@ export default function App() {
         />
       );
 
+    case 'soporte':
+      return (
+        <SoporteScreen
+          onBack={() => navigateTo('menu')}
+          user={user}
+        />
+      );
+
+    case 'legal':
+      return (
+        <LegalScreen
+          onBack={() => navigateTo('menu')}
+        />
+      );
+
     case 'menu':
     default:
       return (
         <MainMenu
           user={user}
           studentData={studentData}
-          onOpenCamera={()   => navigateTo('camera')}
-          onOpenSearch={()   => navigateTo('search')}
-          onOpenFiltrar={()  => navigateTo('filtrar')}
-          onOpenInfo={()     => navigateTo('info')}
-          onOpenHistory={()  => navigateTo('history')}
+          onOpenCamera={()    => navigateTo('camera')}
+          onOpenSearch={()    => navigateTo('search')}
+          onOpenFiltrar={()   => navigateTo('filtrar')}
+          onOpenInfo={()      => navigateTo('info')}
+          onOpenHistory={()   => navigateTo('history')}
+          onOpenSoporte={()   => navigateTo('soporte')}
+          onOpenLegal={()     => navigateTo('legal')}
           onLogout={handleLogout}
         />
       );

@@ -15,6 +15,8 @@ const MainMenu = ({
   onOpenFiltrar,
   onOpenInfo,
   onOpenHistory,
+  onOpenSoporte,
+  onOpenLegal,
   onLogout,
 }) => {
   const hasStudent = !!studentData;
@@ -101,6 +103,19 @@ const MainMenu = ({
           <Text style={styles.outlineBtnText}>Filtrar alumnos</Text>
         </TouchableOpacity>
 
+        {/* Sección: soporte y legal */}
+        <Text style={styles.sectionTitle}>Ayuda e información</Text>
+
+        <TouchableOpacity style={styles.outlineBtn} onPress={onOpenSoporte}>
+          <Ionicons name="help-circle-outline" size={20} color="#8B2453" />
+          <Text style={styles.outlineBtnText}>Soporte y preguntas frecuentes</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.outlineBtnGray} onPress={onOpenLegal}>
+          <Ionicons name="shield-checkmark-outline" size={18} color="#888" />
+          <Text style={styles.outlineBtnGrayText}>Aviso legal y privacidad</Text>
+        </TouchableOpacity>
+
         <View style={{ height: 30 }} />
       </ScrollView>
     </View>
@@ -171,6 +186,14 @@ const styles = StyleSheet.create({
     marginBottom: 10, backgroundColor: '#fff',
   },
   outlineBtnText: { color: '#8B2453', fontSize: 15, fontWeight: '600', flex: 1 },
+
+  outlineBtnGray: {
+    borderWidth: 1.5, borderColor: '#CCC',
+    borderRadius: 14, paddingVertical: 12, paddingHorizontal: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginBottom: 10, backgroundColor: '#FAFAFA',
+  },
+  outlineBtnGrayText: { color: '#888', fontSize: 14, fontWeight: '500', flex: 1 },
 });
 
 export default MainMenu;
