@@ -55,12 +55,14 @@ export const studentService = {
   },
 
   // ── Obtener horario del grupo por id_grupo ────────────────────
-  async getStudentSchedule(groupId) {
+  // espaIds: Set<id_materia> — celdas de esas materias se marcan con _espa: true
+  async getStudentSchedule(groupId, espaIds = new Set()) {
     if (!groupId) return [];
     try {
       const { data, error } = await supabase
-        .from('horarios_grupo')          // nombre correcto de la tabla
+        .from('horarios_grupo')
         .select(`
+          id_materia,
           dia_semana,
           hora_inicio,
           hora_fin,
@@ -70,15 +72,16 @@ export const studentService = {
         .order('hora_inicio');
 
       if (error) throw error;
-      return this.organizeScheduleByDay(data || []);
+      return this.organizeScheduleByDay(data || [], espaIds);
     } catch (err) {
       console.warn('Error obteniendo horario:', err.message);
       return [];
     }
   },
 
-  // Organiza filas de horario en una tabla por franjas horarias
-  organizeScheduleByDay(scheduleData) {
+  // Organiza filas de horario en tabla por franjas horarias.
+  // Las materias cuyo id_materia esté en espaIds se marcan con {dayKey}_espa: true.
+  organizeScheduleByDay(scheduleData, espaIds = new Set()) {
     const timeSlots = {};
 
     scheduleData.forEach(item => {
@@ -87,19 +90,103 @@ export const studentService = {
       const timeKey = `${start}-${end}`;
 
       if (!timeSlots[timeKey]) {
-        timeSlots[timeKey] = { time: timeKey, lun: '-', mar: '-', mie: '-', jue: '-', vie: '-', sab: '-' };
+        timeSlots[timeKey] = {
+          time: timeKey,
+          lun: '-', lun_espa: false,
+          mar: '-', mar_espa: false,
+          mie: '-', mie_espa: false,
+          jue: '-', jue_espa: false,
+          vie: '-', vie_espa: false,
+          sab: '-', sab_espa: false,
+        };
       }
 
       const dayKey = DIA_MAP[item.dia_semana];
       if (dayKey) {
-        // "P601 – Probabilidad y Estadística" → "P601"
-        const full  = item.materias?.nombre_materia || '-';
-        const short = full.split('–')[0].trim();
-        timeSlots[timeKey][dayKey] = short;
+        const full   = item.materias?.nombre_materia || '-';
+        const short  = full.split('–')[0].trim();
+        const isEspa = espaIds.has(item.id_materia);
+        timeSlots[timeKey][dayKey]            = short;
+        timeSlots[timeKey][dayKey + '_espa']  = isEspa;
       }
     });
 
     return Object.values(timeSlots).sort((a, b) => a.time.localeCompare(b.time));
+  },
+
+  // ── Obtener ESPAs acreditadas del alumno con detalle de horario ─
+  // Devuelve { ids: Set<id_materia>, details: [{nombre, dias:[{dia,inicio,fin}]}] }
+  async getStudentEspaWithSchedule(boleta, groupId) {
+    const empty = { ids: new Set(), details: [] };
+    try {
+      // Semestre activo
+      const { data: semData } = await supabase
+        .from('semestres')
+        .select('id_semestre')
+        .eq('activo', true)
+        .maybeSingle();
+
+      // ESPAs del alumno
+      const { data: acred, error } = await supabase
+        .from('materias_acreditadas')
+        .select('id_materia, materias ( nombre_materia )')
+        .eq('boleta', parseInt(boleta));
+
+      if (error || !acred?.length) return empty;
+
+      const ids = new Set(acred.map(a => a.id_materia));
+
+      if (!semData || !groupId) {
+        const details = acred.map(a => ({
+          nombre: a.materias?.nombre_materia || '—',
+          dias:   [],
+        }));
+        return { ids, details };
+      }
+
+      // Horarios de las materias ESPA en el grupo del alumno
+      const { data: horariosEspa } = await supabase
+        .from('horarios_grupo')
+        .select('id_materia, dia_semana, hora_inicio, hora_fin, materias ( nombre_materia )')
+        .eq('id_grupo', groupId)
+        .eq('id_semestre', semData.id_semestre)
+        .in('id_materia', [...ids]);
+
+      const DIA_NOMBRES = {
+        1: 'Lunes', 2: 'Martes', 3: 'Miércoles',
+        4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
+      };
+
+      const byMateria = {};
+      for (const h of (horariosEspa || [])) {
+        if (!byMateria[h.id_materia]) {
+          byMateria[h.id_materia] = {
+            nombre: h.materias?.nombre_materia || '—',
+            dias:   [],
+          };
+        }
+        byMateria[h.id_materia].dias.push({
+          dia:    DIA_NOMBRES[h.dia_semana] || String(h.dia_semana),
+          inicio: h.hora_inicio?.slice(0, 5) || '',
+          fin:    h.hora_fin?.slice(0, 5)    || '',
+        });
+      }
+
+      // Materias ESPA sin horario registrado también aparecen
+      for (const a of acred) {
+        if (!byMateria[a.id_materia]) {
+          byMateria[a.id_materia] = {
+            nombre: a.materias?.nombre_materia || '—',
+            dias:   [],
+          };
+        }
+      }
+
+      return { ids, details: Object.values(byMateria) };
+    } catch (err) {
+      console.warn('Error obteniendo ESPAs:', err.message);
+      return empty;
+    }
   },
 
   // ── Buscar alumnos (por nombre o boleta) ──────────────────────

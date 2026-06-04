@@ -71,9 +71,29 @@ const InfoScreen = ({ onBack, studentData, studentSchedule }) => {
           </View>
         </View>
 
+        {studentData?.espa?.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>ESPAs Acreditadas</Text>
+            {studentData.espa.map((espaItem, i) => (
+              <View key={i} style={styles.espaItem}>
+                <Text style={styles.espaNombre}>{espaItem.nombre}</Text>
+                {espaItem.dias.length > 0 ? (
+                  espaItem.dias.map((d, j) => (
+                    <Text key={j} style={styles.espaDia}>
+                      {d.dia}  {d.inicio}–{d.fin}
+                    </Text>
+                  ))
+                ) : (
+                  <Text style={styles.espaDia}>Sin horario registrado en este semestre</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Horario Semanal</Text>
-          
+
           <View style={styles.scheduleTable}>
             <View style={styles.tableHeader}>
               <View style={styles.timeHeaderCell}>
@@ -95,28 +115,33 @@ const InfoScreen = ({ onBack, studentData, studentSchedule }) => {
                 <Text style={styles.tableHeaderText}>VIE</Text>
               </View>
             </View>
-            
+
             {studentSchedule.length > 0 ? (
               studentSchedule.map((row, index) => (
                 <View key={index} style={styles.tableRow}>
                   <View style={styles.timeCell}>
                     <Text style={styles.timeText}>{row.time}</Text>
                   </View>
-                  <View style={row.lun === '-' ? styles.emptyCell : styles.subjectCell}>
-                    <Text style={styles.subjectText}>{row.lun}</Text>
-                  </View>
-                  <View style={row.mar === '-' ? styles.emptyCell : styles.subjectCell}>
-                    <Text style={styles.subjectText}>{row.mar}</Text>
-                  </View>
-                  <View style={row.mie === '-' ? styles.emptyCell : styles.subjectCell}>
-                    <Text style={styles.subjectText}>{row.mie}</Text>
-                  </View>
-                  <View style={row.jue === '-' ? styles.emptyCell : styles.subjectCell}>
-                    <Text style={styles.subjectText}>{row.jue}</Text>
-                  </View>
-                  <View style={row.vie === '-' ? styles.emptyCell : styles.subjectCell}>
-                    <Text style={styles.subjectText}>{row.vie}</Text>
-                  </View>
+                  {['lun','mar','mie','jue','vie'].map(day => {
+                    const val    = row[day];
+                    const isEspa = row[day + '_espa'];
+                    const isEmpty = val === '-';
+                    return (
+                      <View
+                        key={day}
+                        style={isEmpty ? styles.emptyCell : isEspa ? styles.espaCell : styles.subjectCell}
+                      >
+                        {isEspa ? (
+                          <>
+                            <Text style={styles.espaBadge}>ESPA</Text>
+                            <Text style={styles.espaSubjectText}>{val}</Text>
+                          </>
+                        ) : (
+                          <Text style={styles.subjectText}>{val}</Text>
+                        )}
+                      </View>
+                    );
+                  })}
                 </View>
               ))
             ) : (
@@ -314,6 +339,55 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: 'italic',
     textAlign: 'center',
+  },
+
+  // ── ESPAs Acreditadas ──────────────────────────────────────
+  espaItem: {
+    backgroundColor: '#FFF3E0',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#E65100',
+  },
+  espaNombre: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#BF360C',
+    marginBottom: 4,
+  },
+  espaDia: {
+    fontSize: 12,
+    color: '#E64A19',
+    marginBottom: 2,
+  },
+
+  // ── Celdas ESPA en la tabla de horario ─────────────────────
+  espaCell: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF3E0',
+    borderRightWidth: 1,
+    borderRightColor: '#DDD',
+    padding: 4,
+  },
+  espaBadge: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#E65100',
+    backgroundColor: '#FFCCBC',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 3,
+    marginBottom: 2,
+    overflow: 'hidden',
+  },
+  espaSubjectText: {
+    fontSize: 10,
+    fontWeight: '500',
+    textAlign: 'center',
+    color: '#E65100',
   },
 });
 
