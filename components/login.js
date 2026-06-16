@@ -7,6 +7,8 @@ import {
   StyleSheet, Text, View, TouchableOpacity,
   Alert, TextInput, ActivityIndicator, Image,
 } from 'react-native';
+
+const LOGO = require('../assets/logo_sinborde.png');
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../utils/authService';
 
@@ -37,9 +39,7 @@ const LoginScreen = ({ onLoginSuccess }) => {
       <View style={styles.card}>
         {/* Logo / encabezado */}
         <View style={styles.logoWrap}>
-          <View style={styles.logoBadge}>
-            <Text style={styles.logoText}>QR</Text>
-          </View>
+          <Image source={LOGO} style={styles.logoImg} resizeMode="contain" />
           <Text style={styles.appTitle}>QR Pass</Text>
           <Text style={styles.appSub}>CECyT 9 — Prefectura</Text>
         </View>
@@ -120,19 +120,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 28,
   },
-  logoBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    backgroundColor: '#8B2453',
-    justifyContent: 'center',
-    alignItems: 'center',
+  logoImg: {
+    width: 80,
+    height: 80,
     marginBottom: 10,
-  },
-  logoText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   appTitle: {
     fontSize: 26,

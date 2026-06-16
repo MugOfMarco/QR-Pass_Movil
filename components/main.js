@@ -3,8 +3,10 @@
 
 import React from 'react';
 import {
-  StyleSheet, Text, View, TouchableOpacity, ScrollView,
+  StyleSheet, Text, View, TouchableOpacity, ScrollView, Image,
 } from 'react-native';
+
+const LOGO = require('../assets/logo_sinborde.png');
 import { Ionicons } from '@expo/vector-icons';
 
 const MainMenu = ({
@@ -25,9 +27,12 @@ const MainMenu = ({
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.appTitle}>QR Pass</Text>
-          <Text style={styles.appSub}>CECyT 9 — Prefectura</Text>
+        <View style={styles.headerLeft}>
+          <Image source={LOGO} style={styles.headerLogo} resizeMode="contain" />
+          <View>
+            <Text style={styles.appTitle}>QR Pass</Text>
+            <Text style={styles.appSub}>CECyT 9 — Prefectura</Text>
+          </View>
         </View>
         <TouchableOpacity onPress={onLogout} style={styles.logoutIcon}>
           <Ionicons name="log-out-outline" size={24} color="#8B2453" />
@@ -130,6 +135,12 @@ const styles = StyleSheet.create({
     paddingTop: 58, paddingBottom: 16, paddingHorizontal: 20,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     borderBottomWidth: 1, borderBottomColor: '#EEE',
+  },
+  headerLeft: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+  },
+  headerLogo: {
+    width: 36, height: 36,
   },
   appTitle: { fontSize: 22, fontWeight: 'bold', color: '#111' },
   appSub:   { fontSize: 12, color: '#8B2453', marginTop: 2 },

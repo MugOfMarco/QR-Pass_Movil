@@ -323,7 +323,7 @@ export const studentService = {
         fecha_hora,
         tipos_registro ( descripcion ),
         puntos_acceso ( nombre_punto ),
-        usuarios_sistema ( nombre_completo )
+        v_usuarios_nombre ( nombre_completo )
       `)
       .eq('boleta', parseInt(boleta))
       .order('fecha_hora', { ascending: false })
@@ -336,7 +336,7 @@ export const studentService = {
       date:     new Date(item.fecha_hora),
       tipo:     item.tipos_registro?.descripcion || 'Registro',
       punto:    item.puntos_acceso?.nombre_punto || '—',
-      prefecto: item.usuarios_sistema?.nombre_completo || '—',
+      prefecto: item.v_usuarios_nombre?.nombre_completo || '—',
     }));
   },
 

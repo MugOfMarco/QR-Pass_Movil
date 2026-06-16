@@ -186,10 +186,11 @@ const styles = StyleSheet.create({
   cameraContent: {
     flex: 1,
     backgroundColor: 'transparent',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 120,
+    gap: 24,
   },
   cameraSubtext: {
     color: 'white',
